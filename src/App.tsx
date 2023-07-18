@@ -1,27 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
+import { useEffect, useState } from 'react';
 import './App.css';
-import { Board, simulateRandomGame, simulateRandomGames } from './lib/game';
-function useTimeout(callback: () => void, delay: number) {
-  const timeoutRef = useRef<number | null>(null);
-  const savedCallback = useRef(callback);
-  useEffect(() => {
-    savedCallback.current = callback;
-  }, [callback]);
-  useEffect(() => {
-    const tick = () => savedCallback.current();
-    if (typeof delay === 'number') {
-      timeoutRef.current = window.setTimeout(tick, delay);
-      return () => window.clearTimeout(timeoutRef.current ?? 0);
-    }
-  }, [delay]);
-  return timeoutRef;
-}
+import { Board } from './lib/game';
+
 function App() {
   // rerender on board change
   const [board, setBoard] = useState(Board.getBoard());
-  const [turn, setTurn] = useState(Board.getTurn());
+  const [_turn, setTurn] = useState(Board.getTurn());
 
   const [focusedCell, setFocusedCell] = useState([0, 0]);
   // rerender hook
@@ -110,7 +94,7 @@ function App() {
               gridTemplateColumns: `repeat(${Board.getSize()}, 1fr)`,
             }}
           >
-            {rows.map((cell, c, arr) => {
+            {rows.map((cell, c) => {
               const isFocused = focusedCell[0] === r && focusedCell[1] === c;
 
               return (

@@ -196,10 +196,10 @@ export class _Board {
     });
   }
 
-  getLegalDestroys(player: 1 | 2) {
+  getLegalDestroys(_player: 1 | 2) {
     const squares: number[][] = [];
     this._board.forEach((row, rowIndex) => {
-      row.forEach((col, colIndex) => {
+      row.forEach((_col, colIndex) => {
         if (this._board[rowIndex][colIndex] === 0) {
           squares.push([rowIndex, colIndex]);
         }
@@ -237,7 +237,6 @@ export class _Board {
   }
 
   forecastDestroy(position: number[]) {
-    const player = this._turn;
     const newBoard = this.copy();
 
     newBoard.destroySquare(position);
@@ -555,7 +554,7 @@ export const simulateMinimaxVsRandom = async (numGames: number) => {
   const arr = Array.from({ length: numGames }, () => 0);
 
   await Promise.all(
-    arr.map(async (item, index) => {
+    arr.map(async () => {
       const winner = await simulateMinimaxVsRandomGame();
 
       results[winner as 1 | 2]++;
