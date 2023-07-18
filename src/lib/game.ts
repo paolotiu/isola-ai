@@ -448,7 +448,7 @@ export class _Board {
   }
 
   simulateMiniMaxMove() {
-    const depth = 5;
+    const depth = 2;
     if (this._phase === 'move') {
       const newB = this.copy();
       const bestMove = getBestMove(newB, newB.getTurn(), depth);
