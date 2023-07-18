@@ -21,6 +21,8 @@ export class _Board {
   private _player2Moves: number[][];
   private _player1MovesCount: number;
   private _player2MovesCount: number;
+  private _player1StartPosition: number[];
+  private _player2StartPosition: number[];
   private _turn: 1 | 2;
   private _phase: 'move' | 'destroy' | 'end';
   private _winner: number | null;
@@ -41,6 +43,8 @@ export class _Board {
     this._player2 = 2;
     this._player1Position = opts?.player1Position ?? [];
     this._player2Position = opts?.player2Position ?? [];
+    this._player1StartPosition = opts?.player1Position ?? [];
+    this._player2StartPosition = opts?.player2Position ?? [];
     this._player1Moves = [];
     this._player2Moves = [];
     this._player1MovesCount = 0;
@@ -68,6 +72,8 @@ export class _Board {
 
     this._player1Position = [0, spawnCol];
     this._player2Position = [this._boardSize - 1, spawnCol];
+    this._player1StartPosition = [0, spawnCol];
+    this._player2StartPosition = [this._boardSize - 1, spawnCol];
   }
 
   getBoard() {
@@ -152,7 +158,16 @@ export class _Board {
   movePlayer(player: 1 | 2, position: number[]) {
     if (player === 1) {
       if (this.isMoveLegal(player, position)) {
-        this._board[this._player1Position[0]][this._player1Position[1]] = 0;
+        // If starting position is not empty, mark it as destroyed
+        if (
+          this._player1Position[0] === this._player1StartPosition[0] &&
+          this._player1Position[1] === this._player1StartPosition[1]
+        ) {
+          this._board[this._player1StartPosition[0]][this._player1StartPosition[1]] = 3;
+        } else {
+          this._board[this._player1Position[0]][this._player1Position[1]] = 0;
+        }
+
         this._player1Position = position;
         this._board[position[0]][position[1]] = 1;
         this._lastPlayerMoved = 1;
@@ -161,7 +176,15 @@ export class _Board {
       }
     } else {
       if (this.isMoveLegal(player, position)) {
-        this._board[this._player2Position[0]][this._player2Position[1]] = 0;
+        if (
+          this._player2Position[0] === this._player2StartPosition[0] &&
+          this._player2Position[1] === this._player2StartPosition[1]
+        ) {
+          this._board[this._player2StartPosition[0]][this._player2StartPosition[1]] = 3;
+        } else {
+          this._board[this._player2Position[0]][this._player2Position[1]] = 0;
+        }
+
         this._player2Position = position;
         this._board[position[0]][position[1]] = 2;
         this._lastPlayerMoved = 2;

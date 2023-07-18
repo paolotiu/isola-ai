@@ -33,7 +33,9 @@ const calculateScore = (board: _Board, player: 1 | 2) => {
   // Which square your opp can move to that provides the most available squares (Higher is better)
   // Highest potential available square to opp after destruction (Lower is better)
   // 	On collision of best moves, choose first
+  //own_moves - 2 * opp_moves
   return ownMoves - oppMoves;
+  // return ownMoves - 2 * oppMoves;
 };
 
 const maxValue = (board: _Board, forPlayer: 1 | 2, depth: number) => {
