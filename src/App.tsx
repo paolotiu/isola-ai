@@ -5,7 +5,6 @@ import { Board } from './lib/game';
 function App() {
   // rerender on board change
   const [board, setBoard] = useState(Board.getBoard());
-  const [hasStarted, setHasStarted] = useState(false);
   const [_turn, setTurn] = useState(Board.getTurn());
 
   const [focusedCell, setFocusedCell] = useState([0, 0]);

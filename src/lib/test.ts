@@ -1,4 +1,4 @@
-import { simulateMinimaxVsRandom } from './game';
+// import { simulateMinimaxVsRandom } from './game';
 
 // simulateMinimaxVsRandom(100)
 //   .then((result) => {
