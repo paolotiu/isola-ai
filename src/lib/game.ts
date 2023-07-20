@@ -12,9 +12,10 @@ const PLAYER2_SQUARE = '🔴';
 export class _Board {
   private _board: number[][];
   private _boardSize: number;
-  private _lastPlayerMoved: 1 | 2;
   private _player1: number;
   private _player2: number;
+  private _player1Algo: 'human' | 'random' | 'minimax' | '3';
+  private _player2Algo: 'human' | 'random' | 'minimax' | '3';
   private _player1Position: number[];
   private _player2Position: number[];
   private _player1Moves: number[][];
@@ -35,29 +36,60 @@ export class _Board {
       turn?: 1 | 2;
       player1Position?: number[];
       player2Position?: number[];
+      player1Algo?: 'human' | 'random' | 'minimax' | '3';
+      player2Algo?: 'human' | 'random' | 'minimax' | '3';
     }
   ) {
     this._boardSize = boardSize;
     this._board = opts?.board ?? [];
     this._player1 = 1;
     this._player2 = 2;
-    this._player1Position = opts?.player1Position ?? [];
-    this._player2Position = opts?.player2Position ?? [];
+
+    if (opts?.board) {
+      this._player1Position = this.getPlayerPosition(1);
+      this._player2Position = this.getPlayerPosition(2);
+    } else {
+      this._player1Position = opts?.player1Position ?? [];
+      this._player2Position = opts?.player2Position ?? [];
+    }
     this._player1StartPosition = opts?.player1Position ?? [];
     this._player2StartPosition = opts?.player2Position ?? [];
     this._player1Moves = [];
     this._player2Moves = [];
     this._player1MovesCount = 0;
     this._player2MovesCount = 0;
+    this._player1Algo = opts?.player1Algo ?? 'human';
+    this._player2Algo = opts?.player2Algo ?? 'minimax';
     this._turn = opts?.turn ?? 1;
     this._phase = opts?.phase ?? 'move';
-    this._lastPlayerMoved = 1;
     this._winner = null;
     if (!opts?.board) {
       this.initializeBoard();
     }
   }
 
+  getPlayerPosition(player: 1 | 2) {
+    let position: number[] = [];
+    if (player === 1) {
+      this._board.forEach((row, i) => {
+        row.forEach((col, j) => {
+          if (col === 1) {
+            position = [i, j];
+          }
+        });
+      });
+    } else {
+      this._board.forEach((row, i) => {
+        row.forEach((col, j) => {
+          if (col === 2) {
+            position = [i, j];
+          }
+        });
+      });
+    }
+
+    return position;
+  }
   initializeBoard() {
     for (let i = 0; i < this._boardSize; i++) {
       this._board[i] = [];
@@ -74,6 +106,14 @@ export class _Board {
     this._player2Position = [this._boardSize - 1, spawnCol];
     this._player1StartPosition = [0, spawnCol];
     this._player2StartPosition = [this._boardSize - 1, spawnCol];
+  }
+
+  getAlgoForPlayer(player: 1 | 2) {
+    if (player === 1) {
+      return this._player1Algo;
+    } else {
+      return this._player2Algo;
+    }
   }
 
   getBoard() {
@@ -170,7 +210,6 @@ export class _Board {
 
         this._player1Position = position;
         this._board[position[0]][position[1]] = 1;
-        this._lastPlayerMoved = 1;
         this._phase = 'destroy';
         return true;
       }
@@ -187,7 +226,6 @@ export class _Board {
 
         this._player2Position = position;
         this._board[position[0]][position[1]] = 2;
-        this._lastPlayerMoved = 2;
         this._phase = 'destroy';
         return true;
       }
@@ -273,6 +311,8 @@ export class _Board {
       turn: this._turn,
       player1Position: this._player1Position.slice(),
       player2Position: this._player2Position.slice(),
+      player1Algo: this._player1Algo,
+      player2Algo: this._player2Algo,
     });
 
     return newBoard;
@@ -381,23 +421,17 @@ export class _Board {
       const row = position[0];
       const col = position[1];
       this._board[row][col] = 3;
-      this._lastPlayerMoved = this._turn;
       this._phase = 'move';
       this._turn = this._turn === 1 ? 2 : 1;
 
       const legalMovesForNextPlayer = this.getLegalMoves(this._turn);
       if (legalMovesForNextPlayer.length === 0) {
-        this._lastPlayerMoved = this._turn;
         this._phase = 'end';
         this._winner = this._turn === 1 ? 2 : 1;
       }
       return true;
     }
     return false;
-  }
-
-  getLastPlayerMoved() {
-    return this._lastPlayerMoved;
   }
 
   getWinner() {
@@ -471,9 +505,16 @@ export class _Board {
   }
 
   simulateMiniMaxMove() {
-    const depth = 2;
+    const depth = 3;
+
+    if (this.getAlgoForPlayer(this.getTurn()) === 'random') {
+      console.log('RANDOM');
+      this.simulateNextMove();
+      return;
+    }
     if (this._phase === 'move') {
       const newB = this.copy();
+      console.log(newB);
       const bestMove = getBestMove(newB, newB.getTurn(), depth);
 
       // const boardCopy = newB.getBoard().map((row) => row.slice());
@@ -504,7 +545,10 @@ export class _Board {
   }
 }
 
-export const Board = new _Board(5);
+export const Board = new _Board(5, {
+  player1Algo: 'minimax',
+  player2Algo: 'human',
+});
 
 export const simulateRandomGame = (opts?: { log?: boolean }) => {
   const { log = false } = opts ?? {};
@@ -533,7 +577,23 @@ export const simulateRandomGame = (opts?: { log?: boolean }) => {
 
 const simulateMinimaxVsRandomGame = async (opts?: { log?: boolean }) => {
   const { log = false } = opts ?? {};
-  const Board = new _Board(5);
+  const Board = new _Board(5, {
+    player1Algo: 'random',
+    player2Algo: 'minimax',
+    board: [
+      [3, 3, 3, 3, 3],
+
+      [3, 3, 3, 3, 3],
+
+      [3, 3, 3, 3, 3],
+
+      [2, 0, 3, 3, 3],
+
+      [0, 1, 3, 0, 0],
+    ],
+    turn: 2,
+    phase: 'move',
+  });
 
   while (Board.getWinner() === null) {
     Board.simulateMiniMaxMove();
@@ -541,8 +601,8 @@ const simulateMinimaxVsRandomGame = async (opts?: { log?: boolean }) => {
 
     log && console.log(Board.drawBoard());
 
-    Board.simulateNextMove();
-    Board.simulateNextMove();
+    Board.simulateMiniMaxMove();
+    Board.simulateMiniMaxMove();
   }
 
   log && console.log(`Winner is ${Board.getWinner() ?? 'no one'}`);

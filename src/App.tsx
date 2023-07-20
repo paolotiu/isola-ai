@@ -1,24 +1,58 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
 import { Board } from './lib/game';
 
 function App() {
   // rerender on board change
   const [board, setBoard] = useState(Board.getBoard());
+  const [hasStarted, setHasStarted] = useState(false);
   const [_turn, setTurn] = useState(Board.getTurn());
 
   const [focusedCell, setFocusedCell] = useState([0, 0]);
   // rerender hook
   const [rerender, setRerender] = useState(0);
 
+  const hasRanRef = useRef(false);
+
+  // if (!hasStarted) {
+  //   Board.simulateMiniMaxMove();
+  //   setBoard(Board.getBoard());
+  //   setRerender(Math.random());
+  //   setTimeout(() => {
+  //     Board.simulateMiniMaxMove();
+  //     setBoard(Board.getBoard());
+  //     setRerender(rerender + 1);
+  //     // setHasStarted(true);
+  //   }, 500);
+  // }
+
   console.log('board', board);
+
+  useEffect(() => {
+    if (!hasRanRef.current) {
+      hasRanRef.current = true;
+      setTimeout(() => {
+        Board.simulateMiniMaxMove();
+
+        setBoard(Board.getBoard());
+        setRerender(Math.random());
+        setTimeout(() => {
+          Board.simulateMiniMaxMove();
+
+          setBoard(Board.getBoard());
+          setRerender(Math.random());
+        }, 500);
+      }, 1000);
+    }
+  }, []);
 
   useEffect(() => {
     const listen = (e: KeyboardEvent) => {
       const phase = Board.getPhase();
 
       if (phase === 'end') return;
-      if (Board.getTurn() === 2) return;
+      if (Board.getTurn() === 1) return;
+
       if (e.key === 'ArrowUp') {
         if (focusedCell[0] === 0) return;
         setFocusedCell([focusedCell[0] - 1, focusedCell[1]]);
@@ -53,7 +87,7 @@ function App() {
           setRerender(rerender + 1);
         }
 
-        if (Board.getTurn() === 2) {
+        if (Board.getTurn() === 1) {
           setTimeout(() => {
             Board.simulateMiniMaxMove();
             setBoard(Board.getBoard());
@@ -75,7 +109,8 @@ function App() {
     return () => {
       window.removeEventListener('keydown', listen);
     };
-  });
+  }, [focusedCell, rerender]);
+
   return (
     <div className="grid place-items-center h-full">
       <div
